@@ -7,6 +7,7 @@ open Xamarin.Forms
 open Xamarin.Forms.Xaml
 
 open Plugin.Clipboard
+open Plugin.Connectivity
 open ZXing
 open ZXing.Net.Mobile.Forms
 open ZXing.Common
@@ -34,12 +35,6 @@ type ReceivePage(account: IAccount,
         balanceLabel.FontSize <- FrontendHelpers.BigFontSize
         fiatBalanceLabel.FontSize <- FrontendHelpers.MediumFontSize
 
-        match accountBalance with
-        | Cached(amount,_) ->
-            if (amount > 0m) then
-                mainLayout.FindByName<Button>("sendButton").IsEnabled <- true
-        | _ -> ()
-
         let size = 200
         let encodingOptions = EncodingOptions(Height = size,
                                               Width = size)
@@ -58,6 +53,23 @@ type ReceivePage(account: IAccount,
         ) |> ignore
         mainLayout.Children.Add(transactionHistoryButton)
 
+        if not CrossConnectivity.IsSupported then
+            failwith "cross connectivity plugin not supported for this platform?"
+
+        let paymentButton = mainLayout.FindByName<Button> "paymentButton"
+        use crossConnectivityInstance = CrossConnectivity.Current
+        if crossConnectivityInstance.IsConnected then
+            paymentButton.Text <- "Send Payment"
+            match accountBalance with
+            | Cached(amount,_) ->
+                if (amount > 0m) then
+                    paymentButton.IsEnabled <- true
+            | _ -> ()
+        else
+            paymentButton.Text <- "Signoff Payment Offline"
+            paymentButton.IsEnabled <- true
+            transactionHistoryButton.IsEnabled <- false
+
         // FIXME: report this Xamarin.Forms Mac backend bug (no back button in navigation pages!, so below <workaround>)
         if (Device.RuntimePlatform <> Device.macOS) then () else
 
@@ -71,15 +83,31 @@ type ReceivePage(account: IAccount,
         //</workaround>
 
     member this.OnSendPaymentClicked(sender: Object, args: EventArgs) =
-        let newReceivePageFunc = (fun _ ->
-            ReceivePage(account, balancesPage) :> Page
-        )
-        let sendPage = SendPage(account, this, newReceivePageFunc)
-        NavigationPage.SetHasNavigationBar(sendPage, false)
-        let navSendPage = NavigationPage sendPage
-        NavigationPage.SetHasNavigationBar(navSendPage, false)
-        this.Navigation.PushAsync navSendPage
-            |> FrontendHelpers.DoubleCheckCompletionNonGeneric
+        try
+            Device.BeginInvokeOnMainThread(fun _ ->
+                try
+                    let newReceivePageFunc = (fun _ ->
+                        ReceivePage(account, balancesPage) :> Page
+                    )
+                    let sendPage = SendPage(account, this, newReceivePageFunc)
+                    NavigationPage.SetHasNavigationBar(sendPage, false)
+                    let navSendPage = NavigationPage sendPage
+                    NavigationPage.SetHasNavigationBar(navSendPage, false)
+                    
+
+                    this.Navigation.PushAsync navSendPage
+                        |> FrontendHelpers.DoubleCheckCompletionNonGeneric
+                with
+                | :? Exception as ex ->
+                    let balanceLabel = mainLayout.FindByName<Label>("balanceLabel")
+                    balanceLabel.Text <- ("1:"+ex.ToString())
+            )
+        with
+        | :? Exception as ex ->
+            let balanceLabel = mainLayout.FindByName<Label>("balanceLabel")
+            Device.BeginInvokeOnMainThread(fun _ ->
+                balanceLabel.Text <- ("2:"+ex.ToString())
+            )
         ()
 
     member this.OnCopyToClipboardClicked(sender: Object, args: EventArgs) =

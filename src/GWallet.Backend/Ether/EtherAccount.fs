@@ -303,6 +303,9 @@ module internal Account =
     let public ExportUnsignedTransactionToJson trans =
         Marshalling.Serialize trans
 
+    let public ExportUnsignedTransactionToBson trans =
+        Marshalling.BinarySerialize trans
+
     let SaveUnsignedTransaction (transProposal: UnsignedTransactionProposal)
                                 (txMetadata: TransactionMetadata)
                                 (readOnlyAccounts: seq<ReadOnlyAccount>)
@@ -314,5 +317,5 @@ module internal Account =
                 Cache = Caching.Instance.GetLastCachedData().ToDietCache readOnlyAccounts;
                 Metadata = txMetadata;
             }
-        ExportUnsignedTransactionToJson unsignedTransaction
+        ExportUnsignedTransactionToBson unsignedTransaction
 

@@ -1,10 +1,8 @@
 ﻿namespace GWallet.Backend
 
 open System
-open System.Text
 open System.Linq
 open System.IO
-open System.IO.Compression
 
 module Account =
 
@@ -442,15 +440,6 @@ module Account =
 
         Async.Parallel allAccounts
 
-    let Compress (uncompressedString: string): string =
-        use compressedStream = new MemoryStream()
-        use uncompressedStream = new MemoryStream(Encoding.UTF8.GetBytes uncompressedString)
-        let compressorStream = new DeflateStream(compressedStream, CompressionMode.Compress)
-        uncompressedStream.CopyTo compressorStream
-        // can't use "use" because it needs to be dissposed manually before getting the data
-        compressorStream.Dispose()
-        Convert.ToBase64String(compressedStream.ToArray())
-
     let public ExportUnsignedTransactionToJson trans =
         Marshalling.Serialize trans
 
@@ -475,10 +464,10 @@ module Account =
                                          : string =
 
         let json = SerializeUnsignedTransactionPlain transProposal txMetadata
-        if not compressed then
-            json
-        else
-            Compress json
+        //if not compressed then
+        json
+        //else
+        //    Marshalling.Compress json
 
     let SaveUnsignedTransaction (transProposal: UnsignedTransactionProposal)
                                 (txMetadata: IBlockchainFeeInfo)
@@ -489,7 +478,14 @@ module Account =
         let json = SerializeUnsignedTransaction transProposal txMetadata false
         File.WriteAllText(filePath, json)
 
-    let public ImportUnsignedTransactionFromJson (json: string): UnsignedTransaction<IBlockchainFeeInfo> =
+    let public ImportUnsignedTransactionFromJson (jsonOrCompressedJson: string): UnsignedTransaction<IBlockchainFeeInfo> =
+
+        let json =
+            try
+                Marshalling.Decompress jsonOrCompressedJson
+            with
+            | :? Marshalling.CompressionOrDecompressionException ->
+                jsonOrCompressedJson
 
         let transType = Marshalling.ExtractType json
 

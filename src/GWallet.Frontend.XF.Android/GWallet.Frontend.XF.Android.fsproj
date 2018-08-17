@@ -226,6 +226,9 @@
     <Reference Include="Plugin.Connectivity">
       <HintPath>..\..\packages\Xam.Plugin.Connectivity.4.0.0.190-beta\lib\MonoAndroid10\Plugin.Connectivity.dll</HintPath>
     </Reference>
+    <Reference Include="Newtonsoft.Json.Bson">
+      <HintPath>..\..\packages\Newtonsoft.Json.Bson.1.0.1\lib\netstandard1.3\Newtonsoft.Json.Bson.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="MainActivity.fs" />

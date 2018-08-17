@@ -407,6 +407,9 @@ module Account =
         let finalTransaction = SignTransaction account txMetadata destination amount password
         BroadcastRawTransaction baseAccount.Currency finalTransaction
 
+    let public ExportUnsignedTransactionToBson trans =
+        Marshalling.BinarySerialize trans
+
     // TODO: maybe move this func to Backend.Account module, or simply inline it (simple enough)
     let public ExportUnsignedTransactionToJson trans =
         Marshalling.Serialize trans
@@ -422,7 +425,7 @@ module Account =
                 Cache = Caching.Instance.GetLastCachedData().ToDietCache readOnlyAccounts;
                 Metadata = txMetadata;
             }
-        ExportUnsignedTransactionToJson unsignedTransaction
+        ExportUnsignedTransactionToBson unsignedTransaction
 
     let SweepArchivedFunds (account: ArchivedAccount)
                            (balance: decimal)
