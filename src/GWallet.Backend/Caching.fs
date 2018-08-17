@@ -2,6 +2,7 @@
 
 open System
 open System.IO
+open System.Linq
 
 type CachedValue<'T> = ('T*DateTime)
 type NotFresh<'T> =
@@ -9,6 +10,13 @@ type NotFresh<'T> =
 type MaybeCached<'T> =
     NotFresh of NotFresh<'T> | Fresh of 'T
 type PublicAddress = string
+type private CurrencyDiet = string
+
+type DietCache =
+    {
+        UsdPrice: Map<CurrencyDiet,decimal>;
+        Balances: Map<CurrencyDiet*PublicAddress,decimal>;
+    }
 
 type CachedNetworkData =
     {
@@ -16,6 +24,18 @@ type CachedNetworkData =
         Balances: Map<Currency,Map<PublicAddress,CachedValue<decimal>>>;
         OutgoingTransactions: Map<Currency,Map<PublicAddress,Map<string,CachedValue<decimal>>>>;
     }
+    member this.ToDietCache(readOnlyAccounts: seq<ReadOnlyAccount>) =
+        let fiatPrices =
+            [ for (KeyValue(currency, (price,_))) in this.UsdPrice -> currency.ToString(),price ]
+                |> Map.ofSeq
+        let balances =
+            seq {
+                for (KeyValue(currency, currencyBalances)) in this.Balances do
+                    for (KeyValue(address, (balance,_))) in currencyBalances do
+                        if readOnlyAccounts.Any(fun account -> (account:>IAccount).PublicAddress = address) then
+                            yield ((currency.ToString(),address),balance)
+            } |> Map.ofSeq
+        { UsdPrice = fiatPrices; Balances = balances; }
     static member Empty = { UsdPrice = Map.empty; Balances = Map.empty; OutgoingTransactions = Map.empty; }
 
 module Caching =

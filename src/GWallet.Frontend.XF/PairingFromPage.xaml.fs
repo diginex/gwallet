@@ -24,7 +24,7 @@ type PairingFromPage(previousPage: Page, clipBoardButtonCaption: string, qrCodeC
     member this.Init() =
 
         let clipBoardButton = mainLayout.FindByName<Button> "copyToClipboardButton"
-        clipBoardButton.Text <- clipBoardButtonCaption
+        clipBoardButton.Text <- clipBoardButtonCaption+"("+(qrCodeContents.Length.ToString())
 
         let size = 500
         let encodingOptions = EncodingOptions(Height = size,
