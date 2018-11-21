@@ -1,0 +1,27 @@
+name: geewallet-snap
+version: "0.1"
+summary: geewallet-main
+description: >
+  my description
+confinement: devmode
+
+parts:
+  geewallet:
+    plugin: autotools
+    source-type: git
+    source: https://github.com/diginex/geewallet.git
+    build-packages:
+      - fsharp
+      - curl  
+      - git
+      - pkg-config
+      - mono-xbuild
+      - make
+    override-build: |
+      ./configure.sh --prefix=/usr
+      make
+      sudo make install
+      
+apps:
+  geewallet:
+    command: gwallet
