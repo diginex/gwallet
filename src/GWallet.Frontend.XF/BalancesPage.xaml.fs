@@ -30,6 +30,7 @@ type TotalBalance =
 type BalancesPage(state: FrontendHelpers.IGlobalAppState,
                   normalAccountsAndBalances: seq<BalanceState>,
                   readOnlyAccountsAndBalances: seq<BalanceState>,
+                  currencyImages: Map<Currency*bool,Image>,
                   startWithReadOnlyAccounts: bool)
                       as this =
     inherit ContentPage()
@@ -159,7 +160,8 @@ type BalancesPage(state: FrontendHelpers.IGlobalAppState,
         this.Init()
 
     [<Obsolete(DummyPageConstructorHelper.Warning)>]
-    new() = BalancesPage(DummyPageConstructorHelper.GlobalFuncToRaiseExceptionIfUsedAtRuntime(),Seq.empty,Seq.empty,false)
+    new() = BalancesPage(DummyPageConstructorHelper.GlobalFuncToRaiseExceptionIfUsedAtRuntime(),Seq.empty,Seq.empty,
+                         Map.empty,false)
 
     member private this.IsTimerRunning
         with get() = lock lockObject (fun _ -> timerRunning)
@@ -178,9 +180,6 @@ type BalancesPage(state: FrontendHelpers.IGlobalAppState,
         for currentCryptoBalance in currentCryptoBalances do
             mainLayout.Children.Remove currentCryptoBalance |> ignore
 
-        let thisAssembly = typeof<GlobalState>.Assembly
-        let thisAssemblyName = thisAssembly.GetName().Name
-
         for balanceState in balances do
 
             let tapGestureRecognizer = TapGestureRecognizer()
@@ -197,16 +196,15 @@ type BalancesPage(state: FrontendHelpers.IGlobalAppState,
 
             let stackLayout = StackLayout(Orientation = StackOrientation.Horizontal)
 
-            let colour =
-                if readOnly then
-                    "grey"
-                else
-                    "red"
-            let currency = balanceState.BalanceSet.Account.Currency.ToString().ToLower()
-            let fullyQualifiedResourceName = sprintf "%s.img.%s_%s_120x120.png" thisAssemblyName currency colour
-            let imageSource = ImageSource.FromResource(fullyQualifiedResourceName, thisAssembly)
-            let currencyLogoImg = Image(Source = imageSource)
+            let currencyLogoImg = currencyImages.[(balanceState.BalanceSet.Account.Currency,readOnly)]
+            // this below is to speed up rendering
+            let currencyLogoImgOpposite = currencyImages.[(balanceState.BalanceSet.Account.Currency,not readOnly)]
+
+            currencyLogoImg.IsVisible <- true
+            currencyLogoImgOpposite.IsVisible <- false
+
             stackLayout.Children.Add currencyLogoImg
+            stackLayout.Children.Add currencyLogoImgOpposite
 
             stackLayout.Children.Add balanceState.BalanceSet.CryptoLabel
             stackLayout.Children.Add balanceState.BalanceSet.FiatLabel
@@ -373,7 +371,8 @@ type BalancesPage(state: FrontendHelpers.IGlobalAppState,
                     use crossConnectivityInstance = CrossConnectivity.Current
                     if crossConnectivityInstance.IsConnected then
                         let newBalancesPageFunc = (fun (normalAccountsAndBalances,readOnlyAccountsAndBalances) ->
-                            BalancesPage(state, normalAccountsAndBalances, readOnlyAccountsAndBalances, true) :> Page
+                            BalancesPage(state, normalAccountsAndBalances, readOnlyAccountsAndBalances, currencyImages,
+                                         true) :> Page
                         )
                         let page = PairingToPage(this, normalAccountsAndBalances, newBalancesPageFunc) :> Page
                         NavigationPage.SetHasNavigationBar(page, false)
