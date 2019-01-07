@@ -3,6 +3,7 @@
 open System
 open System.Linq
 open System.Globalization
+open Plugin.Connectivity
 
 open Xamarin.Forms
 open Xamarin.Forms.Xaml
@@ -45,6 +46,14 @@ type WelcomePage(state: FrontendHelpers.IGlobalAppState) =
                                                                c = '?' ||
                                                                c = '!' ||
                                                                c = ''')
+        let IsColdStorageMode(): bool =
+            use conn = CrossConnectivity.Current
+            not conn.IsConnected
+
+        let DoesWordInPassAllExistsInDict(pass: string): bool =
+            let words = pass.Split([|","; "."; " "|], StringSplitOptions.None)
+            let result: bool = words |> Array.map(fun w -> not (NBitcoin.Wordlist.AutoDetectLanguage(w).Equals(NBitcoin.Language.Unknown))) |> Array.reduce(fun a b -> a && b)
+            result
 
         if (passphrase.Text <> passphraseConfirmation.Text) then
             Some "Seed passphrases don't match, please try again"
@@ -57,11 +66,8 @@ type WelcomePage(state: FrontendHelpers.IGlobalAppState) =
             Some "Mix lowercase and uppercase characters in your seed phrase please"
         elif (containsASpaceAtLeast && (not containsADigitAtLeast) && (not containsPunctuation)) then
             Some "For security reasons, please include numbers or punctuation in your passphrase (to increase entropy)"
-
-        // TODO: in case of cold storage mode (detection of offline network), we should be even more strict and maybe
-        // avoid passphrases that only contain words that belong to dictionaries (via using API being introduced in this
-        // pull request: https://github.com/MetacoSA/NBitcoin/pull/498 )
-
+        elif (IsColdStorageMode() && DoesWordInPassAllExistsInDict passphrase.Text) then
+            Some "To assure enough entropy, you must include at least one word which is not included in the BIP39 dictionary"
         else
             None
 
