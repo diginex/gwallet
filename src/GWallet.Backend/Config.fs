@@ -80,12 +80,12 @@ module internal Config =
             configDir.Create()
         configDir
 
-    let GetAllNormalAccounts(currency: Currency): seq<FileInfo> =
-        let configDirForNormalAccounts = GetConfigDirForNormalAccountsOfThisCurrency(currency)
-
+    let GetAllNormalAccounts(currencies: seq<Currency>): seq<FileInfo> =
         seq {
-            for filePath in Directory.GetFiles(configDirForNormalAccounts.FullName) do
-                yield FileInfo(filePath)
+            for currency in currencies do
+                let configDirForNormalAccounts = GetConfigDirForNormalAccountsOfThisCurrency currency
+                for filePath in Directory.GetFiles(configDirForNormalAccounts.FullName) do
+                    yield FileInfo(filePath)
         }
 
     let GetAllReadOnlyAccounts(currency: Currency): seq<FileInfo> =
@@ -139,7 +139,11 @@ module internal Config =
         let configFile = GetFile account
         if configFile.Exists then
             raise AccountAlreadyAdded
-        File.WriteAllText(configFile.FullName, String.Empty)
+        let publicKeyContent =
+            match account.PublicKey with
+            | None -> String.Empty
+            | Some publicKey -> publicKey
+        File.WriteAllText(configFile.FullName, publicKeyContent)
 
     let RemoveReadonly (account: ReadOnlyAccount) =
         let configFile = GetFile account

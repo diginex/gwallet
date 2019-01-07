@@ -4,10 +4,11 @@ open GWallet.Backend
 
 type OutputInfo =
     {
-        ValueInSatoshis: int64;
+        Amount: TransferAmount;
 
-        // FIXME: this info is already in the UnsignedTransactionProposal type, we can remove it from here:
+        // FIXME: these 2 fields below are already in the UnsignedTransactionProposal type?, we can remove it from here:
         DestinationAddress: string;
+        ChangeAddress: string;
     }
 
 type TransactionOutpointInfo =
@@ -21,7 +22,7 @@ type TransactionOutpointInfo =
 type TransactionDraft =
     {
         Inputs: List<TransactionOutpointInfo>;
-        Outputs: List<OutputInfo>;
+        Output: OutputInfo;
     }
 
 type TransactionMetadata =
@@ -33,6 +34,6 @@ type TransactionMetadata =
         member this.FeeEstimationTime with get() = this.Fee.EstimationTime
         member this.FeeValue
             with get() =
-                this.Fee.CalculateAbsoluteValueInSatoshis() |> UnitConversion.FromSatoshiToBtc
+                this.Fee.EstimatedFeeInSatoshis |> UnitConversion.FromSatoshiToBtc
         member this.Currency with get() = this.Fee.Currency
 

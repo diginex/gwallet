@@ -35,7 +35,7 @@ module Presentation =
             | NotFresh(NotAvailable) -> ExchangeRateUnreachableMsg
         Console.WriteLine(sprintf "Estimated fee for this transaction would be:%s %s %A %s"
                               Environment.NewLine
-                              (estimatedFee.FeeValue |> Formatting.DecimalAmount CurrencyType.Crypto)
+                              (estimatedFee.FeeValue.ToString())
                               currency
                               estimatedFeeInUsd
                          )

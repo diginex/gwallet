@@ -86,9 +86,12 @@ module MarshallingData =
                          OutputIndex = 1;
                          ValueInSatoshis = int64 1000;
                          DestinationInHex = "0123456789ABCD" } ];
-            Outputs = [ { ValueInSatoshis = int64 10000; DestinationAddress = "13jxHQDxGto46QhjFiMb78dZdys9ZD8vW5" } ];
+            Output =
+                { ValueInSatoshis = int64 10000
+                  DestinationAddress = "13jxHQDxGto46QhjFiMb78dZdys9ZD8vW5"
+                  ChangeAddress = "3QmmCtJK3gVpKaTv4bWoacdyYz8L6Fu3Nk" }
         }
-    let private someBtcMinerFee = UtxoCoin.MinerFee(10, 0.1m, SomeDate, Currency.BTC)
+    let private someBtcMinerFee = UtxoCoin.MinerFee(10L, SomeDate, Currency.BTC)
     let private someBtcTxMetadata =
         {
             TransactionDraft = someBtcTransactionDraft;

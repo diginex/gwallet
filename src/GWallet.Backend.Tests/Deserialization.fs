@@ -54,11 +54,8 @@ type Deserialization() =
                     Is.EqualTo("16pKBjGGZkUXo1afyBNf5ttFvV9hauS1kR"))
 
         let btcTxMetadata = deserializedUnsignedTrans.Metadata :?> UtxoCoin.TransactionMetadata
-        Assert.That(btcTxMetadata.Fee.EstimatedTransactionSizeInBytes, Is.EqualTo(10))
-        Assert.That(btcTxMetadata.Fee.AmountPerKiloByteForFastTransaction, Is.EqualTo(0.1m))
-        Assert.That(btcTxMetadata.Fee.EstimatedTransactionSizeInBytes, Is.EqualTo(10))
+        Assert.That(btcTxMetadata.Fee.EstimatedFeeInSatoshis, Is.EqualTo 10)
         Assert.That(btcTxMetadata.TransactionDraft.Inputs.Length, Is.EqualTo(1))
-        Assert.That(btcTxMetadata.TransactionDraft.Outputs.Length, Is.EqualTo(1))
         Assert.That(deserializedUnsignedTrans.Metadata.FeeEstimationTime,
                     Is.EqualTo(MarshallingData.SomeDate))
 
@@ -124,10 +121,8 @@ type Deserialization() =
                     Is.EqualTo("16pKBjGGZkUXo1afyBNf5ttFvV9hauS1kR"))
 
         let btcTxMetadata = deserializedSignedTrans.TransactionInfo.Metadata :?> UtxoCoin.TransactionMetadata
-        Assert.That(btcTxMetadata.Fee.EstimatedTransactionSizeInBytes, Is.EqualTo(10))
-        Assert.That(btcTxMetadata.Fee.AmountPerKiloByteForFastTransaction, Is.EqualTo(0.1m))
+        Assert.That(btcTxMetadata.Fee.EstimatedFeeInSatoshis, Is.EqualTo 10)
         Assert.That(btcTxMetadata.TransactionDraft.Inputs.Length, Is.EqualTo(1))
-        Assert.That(btcTxMetadata.TransactionDraft.Outputs.Length, Is.EqualTo(1))
         Assert.That(deserializedSignedTrans.TransactionInfo.Metadata.FeeEstimationTime,
                     Is.EqualTo(MarshallingData.SomeDate))
 

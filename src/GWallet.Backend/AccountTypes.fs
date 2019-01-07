@@ -2,6 +2,12 @@ namespace GWallet.Backend
 
 open System.IO
 
+type WatchWalletInfo =
+    {
+        UtxoCoinPublicKey: string
+        EtherPublicAddress: string
+    }
+
 type ConceptAccount =
     {
         Currency: Currency;
@@ -21,10 +27,13 @@ type NormalAccount(currency: Currency, accountFile: FileInfo, fromAccountFileToP
         member val PublicAddress =
             fromAccountFileToPublicAddress accountFile with get
 
+
 type ReadOnlyAccount(currency: Currency, publicAddress: string) =
+
     interface IAccount with
         member val Currency = currency with get
         member val PublicAddress = publicAddress with get
+
 
 type ArchivedAccount(currency: Currency, accountFile: FileInfo, fromUnencryptedPrivateKeyToPublicAddress: string -> string) =
 
