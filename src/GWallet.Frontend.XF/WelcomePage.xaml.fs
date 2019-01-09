@@ -46,13 +46,13 @@ type WelcomePage(state: FrontendHelpers.IGlobalAppState) =
                                                                c = '?' ||
                                                                c = '!' ||
                                                                c = ''')
-        let IsColdStorageMode(): bool =
+        let IsColdStorageMode =
             use conn = CrossConnectivity.Current
             not conn.IsConnected
 
-        let DoesWordInPassAllExistsInDict(pass: string): bool =
-            let words = pass.Split([|","; "."; " "|], StringSplitOptions.None)
-            let result: bool = words |> Array.map(fun w -> not (NBitcoin.Wordlist.AutoDetectLanguage(w).Equals(NBitcoin.Language.Unknown))) |> Array.reduce(fun a b -> a && b)
+        let AllWordsInPassphraseExistInDictionaries(pass: string): bool =
+            let words = pass.Split([|","; "."; " "; "-"; "_"|], StringSplitOptions.None)
+            let result: bool = words |> Seq.forall(fun word -> not (NBitcoin.Wordlist.AutoDetectLanguage(word).Equals(NBitcoin.Language.Unknown)))
             result
 
         if (passphrase.Text <> passphraseConfirmation.Text) then
@@ -66,8 +66,8 @@ type WelcomePage(state: FrontendHelpers.IGlobalAppState) =
             Some "Mix lowercase and uppercase characters in your seed phrase please"
         elif (containsASpaceAtLeast && (not containsADigitAtLeast) && (not containsPunctuation)) then
             Some "For security reasons, please include numbers or punctuation in your passphrase (to increase entropy)"
-        elif (IsColdStorageMode() && DoesWordInPassAllExistsInDict passphrase.Text) then
-            Some "To assure enough entropy, you must include at least one word which is not included in the BIP39 dictionary"
+        elif (IsColdStorageMode && AllWordsInPassphraseExistInDictionaries passphrase.Text) then
+            Some "For security reasons, please include at least one word that does not exist in any dictionary (to increase entropy)"
         else
             None
 
