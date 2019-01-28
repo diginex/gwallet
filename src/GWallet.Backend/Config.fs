@@ -5,6 +5,8 @@ open System.IO
 open System.Linq
 open System.Reflection
 
+open Xamarin.Essentials
+
 // TODO: make internal when tests don't depend on this anymore
 module Config =
 
@@ -32,7 +34,10 @@ module Config =
             true
         | PlatformID.Unix ->
             if macDirs.All(fun dir -> Directory.Exists dir) then
-                true
+                if not (DeviceInfo.Platform.Equals DevicePlatform.iOS) then
+                    true
+                else
+                    false
             else
                 false
         | _ ->
