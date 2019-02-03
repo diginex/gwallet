@@ -18,13 +18,13 @@ parts:
     # See 'snapcraft plugins'
     plugin: make
     source: ..
-    override-build: |
-      # pulls mono by default
-      apt install -y fsharp
-
+    build-packages:
+      - fsharp
       # needed by our nuget infrastructure
-      apt install -y curl
-
+      - curl
+    stage-packages:
+      - mono-runtime
+    override-build: |
       ./configure.sh --prefix=$SNAPCRAFT_PART_INSTALL/usr
       make
       make install
