@@ -18,17 +18,16 @@ parts:
     # See 'snapcraft plugins'
     plugin: make
     source: ..
-    prepare:
-      # to fix possible hang when installing some mono dependency (tzdata)
-      # (see https://askubuntu.com/a/1013396 )
-      - export DEBIAN_FRONTEND=noninteractive
     build-packages:
-      - fsharp
       # needed by our nuget infrastructure
       - curl
     stage-packages:
       - mono-runtime
     override-build: |
+      # to fix possible hang when installing some mono dependency (tzdata)
+      # (see https://askubuntu.com/a/1013396 )
+      DEBIAN_FRONTEND=noninteractive apt install -y fsharp
+
       ./configure.sh --prefix=$SNAPCRAFT_PART_INSTALL/usr
       make
       make install
