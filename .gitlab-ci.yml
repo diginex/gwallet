@@ -8,6 +8,7 @@ before_script:
 stages:
   - build
   - test
+  - packaging
 
 stockmono_build:
   stage: build
@@ -44,6 +45,9 @@ newmono_build:
     # so that we log the version of nuget for when it works
     - make nuget
 
+    # make sure it has been installed correctly
+    - which gwallet
+
     - apt-get install -y zip
     - make zip
 
@@ -56,3 +60,7 @@ newmono_test:
 
     - time (./configure.sh && make && make check)
 
+snap_build:
+  stage: packaging
+  script:
+    - ./scripts/build_snap.sh
