@@ -66,4 +66,5 @@ newmono_test:
 snap_build:
   stage: packaging
   script:
+    - apt install -y snapcraft
     - ./scripts/build_snap.sh
