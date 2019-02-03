@@ -17,7 +17,7 @@ parts:
   build-and-install-console-frontend:
     # See 'snapcraft plugins'
     plugin: make
-    source: ../../../../../..
+    source: ../../../../../../../..
     build-packages:
       # needed by our nuget infrastructure
       - curl
