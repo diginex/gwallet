@@ -66,5 +66,7 @@ newmono_test:
 snap_build:
   stage: packaging
   script:
+    - DEBIAN_FRONTEND=noninteractive apt-get install -y nuget mono-complete mono-xbuild fsharp
+
     - apt install -y snapcraft
     - ./build_snap.sh
