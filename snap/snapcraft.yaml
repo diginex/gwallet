@@ -26,7 +26,7 @@ parts:
     override-build: |
       # to fix possible hang when installing some mono dependency (tzdata)
       # (see https://askubuntu.com/a/1013396 )
-      DEBIAN_FRONTEND=noninteractive apt install -y fsharp mono-complete
+      DEBIAN_FRONTEND=noninteractive apt-get install -y nuget mono-complete mono-xbuild fsharp
 
       ./configure.sh --prefix=$SNAPCRAFT_PART_INSTALL/usr
       make
