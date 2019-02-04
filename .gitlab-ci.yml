@@ -67,4 +67,4 @@ snap_build:
   stage: packaging
   script:
     - apt install -y snapcraft
-    - ./scripts/build_snap.sh
+    - ./build_snap.sh
