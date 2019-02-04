@@ -6,9 +6,9 @@ before_script:
   - apt-get install -y curl
 
 stages:
+  - packaging
   - build
   - test
-  - packaging
 
 stockmono_build:
   stage: build
